@@ -1,0 +1,28 @@
+{
+  "name": "lwx-jsb",
+  "version": "0.0.1",
+  "description": "like wx js bridge",
+  "main": "dist/lwx.umd.js",
+  "module": "dist/lwx.es.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "./dist/",
+    "./types/"
+  ],
+  "scripts": {
+    "build:type": "npx tsc -p .",
+    "build:vite": "npx tsc -p . && vite build",
+    "build": "npm run build:type && npm run build:vite"
+  },
+  "keywords": [
+    "js",
+    "bridge",
+    "JsBridge"
+  ],
+  "author": "jawa0919",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.3",
+    "vite": "^5.2.0"
+  }
+}

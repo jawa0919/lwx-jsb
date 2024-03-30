@@ -1,0 +1,3 @@
+packages:
+  - 'packages/lwx-jsb'
+  - 'packages/lwx-jsb_vue'

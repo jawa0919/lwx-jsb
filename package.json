@@ -1,0 +1,14 @@
+{
+  "name": "lwx-jsb-monorepo-root",
+  "version": "1.0.0",
+  "description": "like-wx-js-bridge-monorepo-root",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "jawa0919",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.3"
+  }
+}
