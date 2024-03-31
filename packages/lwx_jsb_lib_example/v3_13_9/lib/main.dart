@@ -66,29 +66,90 @@ class WebPage extends StatelessWidget {
 }
 
 class LwxJsbImpl extends LwxJsb {
+  final BuildContext context;
   final WebViewController controller;
-  LwxJsbImpl(String bridgeName, BuildContext context, this.controller)
-      : super(bridgeName, context);
+  LwxJsbImpl(String bridgeName, this.context, this.controller)
+      : super(bridgeName);
 
   @override
-  Future<void> runJavaScript(String javaScript) async {
+  void runJavaScript(String javaScript) {
     controller.runJavaScript(javaScript);
   }
 
   @override
-  Future<Map<String, dynamic>> getNetworkType() async {
-    return {"networkType": "wifi"};
+  Future<Map<String, dynamic>> chooseFile(Map<String, dynamic> req) {
+    // TODO: implement chooseFile
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> chooseImage(Map<String, dynamic> req) {
+    // TODO: implement chooseImage
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> chooseVideo(Map<String, dynamic> req) {
+    // TODO: implement chooseVideo
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> closeWindow(Map<String, dynamic> req) {
+    // TODO: implement closeWindow
+    throw UnimplementedError();
   }
 
   @override
   Future<Map<String, dynamic>> getAppRunInfo(Map<String, dynamic> req) async {
     final key = req['key'] ?? "";
     if (key == "token") {
-      return {"token": 'qwertyuiop'};
+      return {"token": 'qwe'};
     }
     if (key == "um") {
-      return {"um": '123456789'};
+      return {"um": '123'};
     }
-    return Future.error("getAppRunInfo.$key no support,pls contact us.");
+    throw UnimplementedError("getAppRunInfo.$key no support,pls contact us.");
+  }
+
+  @override
+  Future<Map<String, dynamic>> getLocalImgData(Map<String, dynamic> req) {
+    // TODO: implement getLocalImgData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getLocation(Map<String, dynamic> req) {
+    // TODO: implement getLocation
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getNetworkType(Map<String, dynamic> req) async {
+    return {"networkType": "wifi"};
+  }
+
+  @override
+  Future<Map<String, dynamic>> openFile(Map<String, dynamic> req) {
+    // TODO: implement openFile
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> openHtmlWindows(Map<String, dynamic> req) {
+    // TODO: implement openHtmlWindows
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> quitApp(Map<String, dynamic> req) {
+    // TODO: implement quitApp
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> scanQRCode(Map<String, dynamic> req) {
+    // TODO: implement scanQRCode
+    throw UnimplementedError();
   }
 }
