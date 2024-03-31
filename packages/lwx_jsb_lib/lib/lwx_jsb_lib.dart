@@ -4,7 +4,28 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-abstract class LwxJsb {
+abstract class LwxJsbApp {
+  Future<Map<String, dynamic>> getAppRunInfo(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> openHtmlWindows(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> openFile(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> quitApp();
+}
+
+abstract class LwxJsbMp {
+  Future<Map<String, dynamic>> chooseFile(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> chooseVideo(Map<String, dynamic> req);
+}
+
+abstract class LwxJsbWx {
+  Future<Map<String, dynamic>> chooseImage(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> getLocalImgData(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> getNetworkType();
+  Future<Map<String, dynamic>> getLocation(Map<String, dynamic> req);
+  Future<Map<String, dynamic>> closeWindow();
+  Future<Map<String, dynamic>> scanQRCode(Map<String, dynamic> req);
+}
+
+abstract class LwxJsb implements LwxJsbApp, LwxJsbMp, LwxJsbWx {
   static const String defBridgeName = "lwxJsBridge";
 
   String bridgeName;
@@ -13,10 +34,6 @@ abstract class LwxJsb {
   LwxJsb(this.bridgeName, this.context);
 
   Future<void> runJavaScript(String javaScript);
-
-  Future<Map<String, dynamic>> getNetworkType();
-
-  Future<Map<String, dynamic>> getAppRunInfo(Map<String, dynamic> req);
 
   void callback(dynamic m) {
     debugPrint("LwxJsb-callback" + m.message);
