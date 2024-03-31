@@ -2,13 +2,13 @@ library lwx_jsb_lib;
 
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class LwxJsbApp {
   Future<Map<String, dynamic>> getAppRunInfo(Map<String, dynamic> req);
   Future<Map<String, dynamic>> openHtmlWindows(Map<String, dynamic> req);
   Future<Map<String, dynamic>> openFile(Map<String, dynamic> req);
-  Future<Map<String, dynamic>> quitApp();
+  Future<Map<String, dynamic>> quitApp(Map<String, dynamic> req);
 }
 
 abstract class LwxJsbMp {
@@ -19,9 +19,9 @@ abstract class LwxJsbMp {
 abstract class LwxJsbWx {
   Future<Map<String, dynamic>> chooseImage(Map<String, dynamic> req);
   Future<Map<String, dynamic>> getLocalImgData(Map<String, dynamic> req);
-  Future<Map<String, dynamic>> getNetworkType();
+  Future<Map<String, dynamic>> getNetworkType(Map<String, dynamic> req);
   Future<Map<String, dynamic>> getLocation(Map<String, dynamic> req);
-  Future<Map<String, dynamic>> closeWindow();
+  Future<Map<String, dynamic>> closeWindow(Map<String, dynamic> req);
   Future<Map<String, dynamic>> scanQRCode(Map<String, dynamic> req);
 }
 
@@ -29,38 +29,61 @@ abstract class LwxJsb implements LwxJsbApp, LwxJsbMp, LwxJsbWx {
   static const String defBridgeName = "lwxJsBridge";
 
   String bridgeName;
-  BuildContext context;
-
-  LwxJsb(this.bridgeName, this.context);
-
-  Future<void> runJavaScript(String javaScript);
+  LwxJsb(this.bridgeName);
 
   void callback(dynamic m) {
-    debugPrint("LwxJsb-callback" + m.message);
+    debugPrint("LwxJsb-callback " + m.message);
     Map<String, dynamic> reqMap = jsonDecode(m.message);
     String api = reqMap['api'];
     String id = reqMap['id'];
-    Map<String, dynamic> req = reqMap['req'];
-    debugPrint("$bridgeName-$api-$id");
-    Future.value(api).then<Map<String, dynamic>>((apiName) async {
+    Map<String, dynamic> req = reqMap['req'] ?? {};
+    // TODO 2024-03-31 14:56:25 func support
+    // List<String> func = reqMap['func'] ?? [];
+    debugPrint("LwxJsb-run $bridgeName.$api$id");
+    Future.value(api).then<Map<String, dynamic>>((apiName) {
       switch (apiName) {
-        case "getNetworkType":
-          return getNetworkType();
         case "getAppRunInfo":
           return getAppRunInfo(req);
+        case "openHtmlWindows":
+          return openHtmlWindows(req);
+        case "openFile":
+          return openFile(req);
+        case "quitApp":
+          return quitApp(req);
+
+        case "chooseFile":
+          return chooseFile(req);
+        case "chooseVideo":
+          return chooseVideo(req);
+
+        case "chooseImage":
+          return chooseImage(req);
+        case "getLocalImgData":
+          return getLocalImgData(req);
+        case "getNetworkType":
+          return getNetworkType(req);
+        case "getLocation":
+          return getLocation(req);
+        case "closeWindow":
+          return closeWindow(req);
+        case "scanQRCode":
+          return scanQRCode(req);
+
         default:
           return Future.error("no support $apiName");
       }
-    }).then((res) async {
-      debugPrint("LwxJsb-res" + res.toString());
+    }).then((res) {
+      debugPrint("LwxJsb-res " + res.toString());
       String codeStr = json.encode(res);
-      String evalCode = "window.$bridgeName.$api$id.resolve($codeStr)";
-      await runJavaScript(evalCode);
+      String evalCode = "$bridgeName.$api$id.resolve($codeStr)";
+      runJavaScript(evalCode);
     }).catchError((err) async {
-      debugPrint("LwxJsb-err" + err.toString());
+      debugPrint("LwxJsb-err " + err.toString());
       String codeStr = err.toString();
-      String evalCode = "window.$bridgeName.$api$id.reject('$codeStr')";
-      await runJavaScript(evalCode);
+      String evalCode = "$bridgeName.$api$id.reject('$codeStr')";
+      runJavaScript(evalCode);
     });
   }
+
+  void runJavaScript(String javaScript);
 }

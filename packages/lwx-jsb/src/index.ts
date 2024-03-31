@@ -1,27 +1,4 @@
 /**
- * 打印开关
- */
-let logEnable = false;
-
-/**
- * 设置打印开关
- *
- * @returns
- */
-export function setLogEnable(val: boolean): void {
-  lwxLog("setLogEnable", { val });
-  logEnable = val;
-}
-
-/**
- * 获取打印开关
- * @returns
- */
-export function lwxLog(...data: any[]): void {
-  if (logEnable) console.log(...data);
-}
-
-/**
  * js挂载对象名称
  */
 let bridgeName = "lwxJsBridge";
@@ -65,6 +42,29 @@ export function getCodeFormUrl(keyName = "code"): string {
   const query = new URL(location.href.toLocaleLowerCase()).searchParams;
   const resCode = query.get(keyName.toLocaleLowerCase());
   return resCode || "";
+}
+
+/**
+ * 打印开关
+ */
+let logEnable = false;
+
+/**
+ * 设置打印开关
+ *
+ * @returns
+ */
+export function setLogEnable(val: boolean): void {
+  lwxLog("setLogEnable", { val });
+  logEnable = val;
+}
+
+/**
+ * 获取打印开关
+ * @returns
+ */
+export function lwxLog(...data: any[]): void {
+  if (logEnable) console.log(...data);
 }
 
 export * from "./api/app";

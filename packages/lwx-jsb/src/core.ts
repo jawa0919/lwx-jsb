@@ -5,10 +5,6 @@ import { getBridgeName, isRunInBridgeApp, lwxLog } from "./index";
  */
 let cbIdentity = 0;
 
-export type Func<T> = (data: T) => void;
-export type ResolveFunc<T> = Func<T>;
-export type RejectFunc = (error: unknown) => void;
-
 /**
  * 执行一次的方法
  * @param api
@@ -18,13 +14,12 @@ export type RejectFunc = (error: unknown) => void;
  */
 export function execOnce<T>(
   api: string,
-  req?: Record<string, unknown>,
-  ...f: Func<unknown>[]
+  req: Record<string, unknown> = {}
 ): Promise<T> {
   if (!isRunInBridgeApp()) return Promise.reject("需要在App中打开");
   return new Promise<T>((resolve, reject) => {
-    const id = jsBuildCallback<T>(true, api, resolve, reject, ...f);
-    jsPostMessage(api, id, req ?? {}, f.map((r) => r.name) ?? []);
+    const id = jsBuildCallback<T>(true, api, resolve, reject);
+    jsPostMessage(api, id, req);
   });
 }
 
@@ -39,32 +34,17 @@ export function execOnce<T>(
 export function exec<T>(
   api: string,
   req: Record<string, unknown> = {},
-  resolve: ResolveFunc<T>,
-  reject?: RejectFunc
+  resolve: (res: T) => void,
+  reject?: (err: unknown) => void,
+  ...f: ((data: unknown) => void)[]
 ): string | undefined {
   if (!isRunInBridgeApp()) {
     if (reject) reject("需要在App中打开");
     return undefined;
   }
-  const id = jsBuildCallback<T>(false, api, resolve, reject);
-  jsPostMessage(api, id, req, []);
+  const id = jsBuildCallback<T>(false, api, resolve, reject, ...f);
+  jsPostMessage(api, id, req, ...(f.map((r) => r.name) ?? []));
   return id;
-}
-
-export declare namespace Bridge {
-  interface BridgePostMessage {
-    postMessage: (json: string) => void;
-  }
-
-  interface BridgeApiLife {
-    [runningApi: string]: ApiLifeImpl;
-  }
-
-  interface ApiLifeImpl {
-    resolve?: Function;
-    reject?: Function;
-    [otherFunc: string]: Function | undefined;
-  }
 }
 
 /**
@@ -79,31 +59,30 @@ export declare namespace Bridge {
 function jsBuildCallback<T>(
   once = true,
   api: string,
-  resolve: ResolveFunc<T>,
-  reject?: RejectFunc,
-  ...otherFunc: Func<unknown>[]
+  resolve: (res: T) => void,
+  reject?: (err: unknown) => void,
+  ...f: ((data: unknown) => void)[]
 ): string {
   const id = `_${++cbIdentity}`;
   const apiId = `${api}${id}`;
   const bridge = (window as any)[getBridgeName()];
-  if (typeof bridge[apiId] === "undefined")
-    bridge[apiId] = {} as Bridge.ApiLifeImpl;
+  if (typeof bridge[apiId] === "undefined") bridge[apiId] = {};
   const bridgeApi = bridge[apiId];
-  bridgeApi[`resolve`] = (data: T) => {
-    lwxLog("_jsBuildCallback resolve", data);
-    resolve(data);
+  bridgeApi[`resolve`] = (res: T) => {
+    lwxLog("_jsBuildCallback resolve", res);
+    resolve(res);
     if (once) delete bridge[apiId];
   };
   if (reject)
-    bridgeApi[`reject`] = (error: unknown) => {
-      lwxLog("_jsBuildCallback reject", error);
-      reject(`${error}`);
+    bridgeApi[`reject`] = (err: unknown) => {
+      lwxLog("_jsBuildCallback reject", err);
+      reject(`${err}`);
       if (once) delete bridge[apiId];
     };
-  otherFunc.forEach((func) => {
-    bridgeApi[func.name] = (res: unknown) => {
-      lwxLog(`_jsBuildCallback ${func.name}`, res);
-      func(res);
+  f.forEach((func) => {
+    bridgeApi[func.name] = (data: unknown) => {
+      lwxLog(`_jsBuildCallback ${func.name}`, data);
+      func(data);
     };
   });
   lwxLog(`_jsBuildCallback`, bridgeApi);
@@ -117,7 +96,12 @@ function jsBuildCallback<T>(
  * @param req
  * @param func
  */
-function jsPostMessage(api: string, id: string, req: object, func: string[]) {
+function jsPostMessage(
+  api: string,
+  id: string,
+  req: Record<string, unknown>,
+  ...func: string[]
+) {
   const map = { api, id, req, func };
   lwxLog(`_jsPostMessage`, map);
   const bridge = (window as any)[getBridgeName()];

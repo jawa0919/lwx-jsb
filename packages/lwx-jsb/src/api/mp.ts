@@ -77,12 +77,12 @@ export function getStorage<T>(key: string): Promise<T> {
  * 获取当前storage的相关信息
  */
 export function getStorageInfo(): Promise<StorageInfoModel> {
-  return execOnce("getStorageInfo");
+  return execOnce("getStorageInfo", {});
 }
 
 /**
  * 清理本地数据缓存
  */
 export function clearStorage(): Promise<boolean> {
-  return execOnce<boolean>("clearStorage");
+  return execOnce<boolean>("clearStorage", {});
 }
