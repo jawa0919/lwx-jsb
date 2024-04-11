@@ -31,9 +31,9 @@ abstract class LwxJsb implements LwxJsbApp, LwxJsbMp, LwxJsbWx {
   String bridgeName;
   LwxJsb(this.bridgeName);
 
-  void callback(dynamic m) {
-    debugPrint("LwxJsb-callback " + m.message);
-    Map<String, dynamic> reqMap = jsonDecode(m.message);
+  void callback(dynamic javaScriptMessage) {
+    debugPrint("LwxJsb-callback " + javaScriptMessage.message);
+    Map<String, dynamic> reqMap = jsonDecode(javaScriptMessage.message);
     String api = reqMap['api'];
     String id = reqMap['id'];
     Map<String, dynamic> req = reqMap['req'] ?? {};
@@ -84,6 +84,10 @@ abstract class LwxJsb implements LwxJsbApp, LwxJsbMp, LwxJsbWx {
       runJavaScript(evalCode);
     });
   }
+
+  void resolve(String codeStr) {}
+
+  void reject(String codeStr) {}
 
   void runJavaScript(String javaScript);
 }

@@ -6,40 +6,42 @@ import { getBridgeName, isRunInBridgeApp, lwxLog } from "./index";
 let cbIdentity = 0;
 
 /**
- * 执行一次的方法
+ * 执行Promise的方法
  * @param api
  * @param req
  * @param f
  * @returns
  */
-export function execOnce<T>(
+export function execPromise<T>(
   api: string,
-  req: Record<string, unknown> = {}
+  req: Record<string, unknown> = {},
+  ...f: ((data: unknown) => void)[]
 ): Promise<T> {
-  if (!isRunInBridgeApp()) return Promise.reject("需要在App中打开");
+  if (!isRunInBridgeApp()) return Promise.reject("should run in app");
   return new Promise<T>((resolve, reject) => {
-    const id = jsBuildCallback<T>(true, api, resolve, reject);
-    jsPostMessage(api, id, req);
+    const id = jsBuildCallback<T>(true, api, resolve, reject, ...f);
+    jsPostMessage(api, id, req, ...(f.map((r) => r.name) ?? []));
   });
 }
 
 /**
- * 执行多次的方法
+ * 执行Callback的方法
  * @param api
  * @param req
+ * @param resolve
+ * @param reject
  * @param f
  * @returns
- * @deprecated Use `execOnce()` instead.
  */
-export function exec<T>(
+export function execCallback<T>(
   api: string,
   req: Record<string, unknown> = {},
   resolve: (res: T) => void,
-  reject?: (err: unknown) => void,
+  reject: (err: unknown) => void,
   ...f: ((data: unknown) => void)[]
 ): string | undefined {
   if (!isRunInBridgeApp()) {
-    if (reject) reject("需要在App中打开");
+    reject("should run in app");
     return undefined;
   }
   const id = jsBuildCallback<T>(false, api, resolve, reject, ...f);
@@ -60,7 +62,7 @@ function jsBuildCallback<T>(
   once = true,
   api: string,
   resolve: (res: T) => void,
-  reject?: (err: unknown) => void,
+  reject: (err: unknown) => void,
   ...f: ((data: unknown) => void)[]
 ): string {
   const id = `_${++cbIdentity}`;
@@ -73,12 +75,11 @@ function jsBuildCallback<T>(
     resolve(res);
     if (once) delete bridge[apiId];
   };
-  if (reject)
-    bridgeApi[`reject`] = (err: unknown) => {
-      lwxLog("_jsBuildCallback reject", err);
-      reject(`${err}`);
-      if (once) delete bridge[apiId];
-    };
+  bridgeApi[`reject`] = (err: unknown) => {
+    lwxLog("_jsBuildCallback reject", err);
+    reject(`${err}`);
+    if (once) delete bridge[apiId];
+  };
   f.forEach((func) => {
     bridgeApi[func.name] = (data: unknown) => {
       lwxLog(`_jsBuildCallback ${func.name}`, data);
